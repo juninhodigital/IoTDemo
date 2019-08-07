@@ -85,6 +85,7 @@ namespace IoT.Demo.SendEvents
             }
             catch(Exception e)
             {
+                Console.WriteLine(e.Message);
             }
         }
 
