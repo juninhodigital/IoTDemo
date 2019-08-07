@@ -21,6 +21,7 @@ namespace IoT.Demo.SendEvents
 
         static void Main(string[] args)
         {
+            LoadConfiguration();
             Initialize();
         }
 
