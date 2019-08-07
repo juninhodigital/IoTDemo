@@ -1,0 +1,9 @@
+temperature-monitor-hub
+temperature-monitor-device
+temperature-monitor-ns.servicebus.windows.net
+temperature-monitor-event-hub
+temperature-monitor-SAJ (Stream Analytics Job)
+temperature-monitor-function
+
+temperature-monitor-logic-app
+https://prod-24.centralus.logic.azure.com:443/workflows/9c5e955856ef460abf6a47306316e566/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aaXQolfliTCwrmKnJE_Ogb_FiQclf4xPBEgif9jdPYs
