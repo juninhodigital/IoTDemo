@@ -1,5 +1,5 @@
-# IotDemo
-#### IotDemp
+# Azure IoT Demo - MBA (14NET)
+#### IoT Demo
 Solução usando Azure IoT Hub que recebe dois  dados (aleatórios dentro de uma faixa aceitável), com uso de Serverless por meio de Azure Functions
 
 Technologies
