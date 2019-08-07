@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,9 +12,9 @@ namespace IoT.Demo.SendEvents
     {
         #region| Fields |
 
-        static string iotHubUri = "garbage-monitor-hub.azure-devices.net"; // ! put in value !
-        static string deviceId = "garbage-raspeberrypi-device"; // ! put in value !
-        static string deviceKey = "JduQntLCAsekde7rUWIntFM1dYSaY5i8OW6PV3Z6IS8="; // ! put in value ! 
+        static string iotHubUri = string.Empty;
+        static string deviceId  = string.Empty;
+        static string deviceKey = string.Empty;
         #endregion
 
         #region| Constructor |
@@ -26,6 +27,16 @@ namespace IoT.Demo.SendEvents
         #endregion
 
         #region| Methods |
+
+        /// <summary>
+        /// Load appsettings configuration items
+        /// </summary>
+        private static void LoadConfiguration()
+        {
+            iotHubUri = ConfigurationManager.AppSettings["IOT.HUB.URI"];
+            deviceId  = ConfigurationManager.AppSettings["IOT.HUB.DEVICE.ID"];
+            deviceKey = ConfigurationManager.AppSettings["IOT.HUB.DEVICE.KEY"];
+        }
 
         private static void Initialize()
         {
