@@ -66,20 +66,33 @@ namespace IoT.Demo.SendEvents
                         Pressure    = pressure.ToString(),
                     };
 
-                    Print("Enter temperature (press CTRL+Z to exit):");
+                    Print("Enter temperature (Or type EXIT to quit):");
 
                     var readtemp = Console.ReadLine();
 
                     if(readtemp != null)
                     {
-                        info.Temperature = readtemp;
+                        if(readtemp.Equals("EXIT", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            Console.Clear();
+                            Print("Press any key to close the application");
+                            Console.ReadLine();
+
+                            return;
+                        }
+                        else
+                        {
+                            info.Temperature = readtemp;
+                        }
                     }
+                   
 
                     var serializedString = JsonConvert.SerializeObject(info);
                     var data             = new Message(Encoding.UTF8.GetBytes(serializedString));
 
                     // Send the metric to Event Hub
                     var task = Task.Run(async () => await deviceClient.SendEventAsync(data));
+                    //deviceClient.SendEventAsync(data).Wait();
 
                     //Write the values to your debug console                            
                     Print($"DeviceID: {dId.ToString()}");
@@ -97,7 +110,11 @@ namespace IoT.Demo.SendEvents
             }
             catch(Exception e)
             {
-                Console.WriteLine(e.Message);
+                var message = e.Message + e.InnerException?.Message;
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(message);
+                Console.ReadLine();
             }
         }
 

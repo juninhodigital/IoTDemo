@@ -1,0 +1,9 @@
+{
+  "EventProcessedUtcTime": "0001-01-01T00:00:00",
+  "PartitionId": 0,
+  "EventEnqueuedUtcTime": "0001-01-01T00:00:00",
+  "TimeStamp1": "2019-08-07T19:07:14.2859213Z",
+  "Temperature": "5",
+  "Pressure": "216",
+  "DeviceId": "temperature-monitor-device"
+}
