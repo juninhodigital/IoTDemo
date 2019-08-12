@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace IoT.Demo.SendEvents
+namespace IoT.Demo
 {
     [DataContract]
     public class Event

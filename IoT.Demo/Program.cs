@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Configuration;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-namespace IoT.Demo.SendEvents
+namespace IoT.Demo
 {
     class Program
     {
@@ -20,6 +21,10 @@ namespace IoT.Demo.SendEvents
 
         #region| Constructor |
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
             LoadConfiguration();
@@ -35,35 +40,37 @@ namespace IoT.Demo.SendEvents
         /// </summary>
         private static void LoadConfiguration()
         {
-            iotHubUri = ConfigurationManager.AppSettings["uri"];
-            deviceId = ConfigurationManager.AppSettings["device.id"];
-            deviceKey = ConfigurationManager.AppSettings["device.key"];
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+
+            iotHubUri = configuration["uri"];
+            deviceId  = configuration["device.id"];
+            deviceKey = configuration["device.key"];
         }
 
         private static void Initialize()
         {
             var random = new Random();
 
-            var deviceClient = DeviceClient.Create(
-                iotHubUri,
-                AuthenticationMethodFactory
-                    .CreateAuthenticationWithRegistrySymmetricKey(deviceId, deviceKey),
-                TransportType.Mqtt);
+            var deviceClient = DeviceClient.Create(iotHubUri, AuthenticationMethodFactory.CreateAuthenticationWithRegistrySymmetricKey(deviceId, deviceKey), TransportType.Mqtt);
 
             try
             {
-                for (int i = 0; i < 20; i++)
+                for(int i = 0; i < 20; i++)
                 {
-                    int temperature = random.Next(15, 50);
-                    int pressure = random.Next(200, 300);
-                    int dId = random.Next(1, 5);
+                    int temperature = random.Next(15, 80);
+                    int pressure    = random.Next(200, 300);
+                    int dId         = random.Next(1, 5);
 
                     var info = new Event()
                     {
-                        TimeStamp1 = DateTime.UtcNow,
-                        DeviceId = deviceId,
+                        TimeStamp1  = DateTime.UtcNow,
+                        DeviceId    = deviceId,
                         Temperature = temperature.ToString(),
-                        Pressure = pressure.ToString(),
+                        Pressure    = pressure.ToString(),
                     };
 
                     var serializedString = JsonConvert.SerializeObject(info);
@@ -72,15 +79,12 @@ namespace IoT.Demo.SendEvents
                     // Enviar dados para o Hub
                     var task = Task.Run(async () => await deviceClient.SendEventAsync(data));
 
-                    Print($@"[{info.TimeStamp1}] Device-ID: {dId.ToString()}
-                            Temperature: {info.Temperature.ToString()} deg C
-                            Pressure: {info.Pressure}
-                            ##################################".Replace("    ", ""));
+                    Print($@"[{info.TimeStamp1}] Device-ID: {dId.ToString()} Temperature: {info.Temperature.ToString()} deg C, Pressure: {info.Pressure} ##################################".Replace("    ", ""));
 
                     Thread.Sleep(3000);
                 }
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 var message = e.Message + e.InnerException?.Message;
 
