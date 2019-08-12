@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Azure.Devices.Client;
@@ -13,7 +14,7 @@ namespace IoT.Demo.SendEvents
         #region| Fields |
 
         static string iotHubUri = string.Empty;
-        static string deviceId  = string.Empty;
+        static string deviceId = string.Empty;
         static string deviceKey = string.Empty;
         #endregion
 
@@ -34,81 +35,52 @@ namespace IoT.Demo.SendEvents
         /// </summary>
         private static void LoadConfiguration()
         {
-            iotHubUri = ConfigurationManager.AppSettings["IOT.HUB.URI"];
-            deviceId  = ConfigurationManager.AppSettings["IOT.HUB.DEVICE.ID"];
-            deviceKey = ConfigurationManager.AppSettings["IOT.HUB.DEVICE.KEY"];
+            iotHubUri = ConfigurationManager.AppSettings["uri"];
+            deviceId = ConfigurationManager.AppSettings["device.id"];
+            deviceKey = ConfigurationManager.AppSettings["device.key"];
         }
 
         private static void Initialize()
         {
             var random = new Random();
 
-            int temp = 0,
-                pressure = 0,
-                dId = 0;
-
-            // Create a device client
-            var deviceClient = DeviceClient.Create(iotHubUri, AuthenticationMethodFactory.CreateAuthenticationWithRegistrySymmetricKey(deviceId, deviceKey), TransportType.Http1);
+            var deviceClient = DeviceClient.Create(
+                iotHubUri,
+                AuthenticationMethodFactory
+                    .CreateAuthenticationWithRegistrySymmetricKey(deviceId, deviceKey),
+                TransportType.Mqtt);
 
             try
             {
-                for(int i = 0; i < 20; i++)
+                for (int i = 0; i < 20; i++)
                 {
-                    temp     = random.Next(35, 55);
-                    pressure = random.Next(200, 300);
-                    dId      = random.Next(1, 5);
+                    int temperature = random.Next(15, 50);
+                    int pressure = random.Next(200, 300);
+                    int dId = random.Next(1, 5);
 
                     var info = new Event()
                     {
-                        TimeStamp1  = DateTime.UtcNow,
-                        DeviceId    = deviceId,
-                        Temperature = temp.ToString(),
-                        Pressure    = pressure.ToString(),
+                        TimeStamp1 = DateTime.UtcNow,
+                        DeviceId = deviceId,
+                        Temperature = temperature.ToString(),
+                        Pressure = pressure.ToString(),
                     };
 
-                    Print("Enter temperature (Or type EXIT to quit):");
-
-                    var readtemp = Console.ReadLine();
-
-                    if(readtemp != null)
-                    {
-                        if(readtemp.Equals("EXIT", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            Console.Clear();
-                            Print("Press any key to close the application");
-                            Console.ReadLine();
-
-                            return;
-                        }
-                        else
-                        {
-                            info.Temperature = readtemp;
-                        }
-                    }
-                   
-
                     var serializedString = JsonConvert.SerializeObject(info);
-                    var data             = new Message(Encoding.UTF8.GetBytes(serializedString));
+                    var data = new Message(Encoding.UTF8.GetBytes(serializedString));
 
-                    // Send the metric to Event Hub
+                    // Enviar dados para o Hub
                     var task = Task.Run(async () => await deviceClient.SendEventAsync(data));
-                    //deviceClient.SendEventAsync(data).Wait();
 
-                    //Write the values to your debug console                            
-                    Print($"DeviceID: {dId.ToString()}");
-                    Print($"Timestamp: {info.TimeStamp1}");
-                    Print($"Temperature: {info.Temperature.ToString()} deg C");
-                    Print($"Pressure: {info.Pressure}");
-                    Print($"------------------------------");
-                    
-                    //Message data = new Message(Encoding.UTF8.GetBytes("myDeviceId2,19,Ban-EGL,14804022344554"));
-                    //// Send the metric to Event Hub
-                    //var task = Task.Run(async () => await deviceClient.SendEventAsync(data));
+                    Print($@"[{info.TimeStamp1}] Device-ID: {dId.ToString()}
+                            Temperature: {info.Temperature.ToString()} deg C
+                            Pressure: {info.Pressure}
+                            ##################################".Replace("    ", ""));
 
-                    Task.Delay(3000).Wait();
+                    Thread.Sleep(3000);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 var message = e.Message + e.InnerException?.Message;
 
